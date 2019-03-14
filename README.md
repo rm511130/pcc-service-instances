@@ -81,7 +81,7 @@ $ cf curl /v2/service_instances | jq '.resources[] .entity .name, .resources[] .
 
 Note that we have 15 Service Instance Names followed in the same order by their respective Service Instance GUIDs.
 
-The Service Instance named `"PCC_Dev_Test"` for example, is a PCC Service Instance that was not created in the Demo/Demo ORG and SPACE.
+The Service Instance named `"PCC_Dev_Test"` for example, is a PCC Service Instance that was not created in the Demo/Demo ORG and SPACE. We know this because its name did no show up in the results of Step 2.
 
 The Service Instance named `"dev-cluster"` (fourth on the list) is the one bound to the `pcc-lookaside-cache` App, so let's use it as the example. It's corresponding GUID is `"f0dcd3e4-4645-466e-ac14-89686cb2c905"`
 
