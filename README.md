@@ -144,7 +144,7 @@ Interesting results, but they are oddly simple. It turns out that `"dev-cluster"
 
 ## Step 5. Let's find UsedHeapSize for the SmallPCC Cluster GUID a83cf6e1-7592-4b69-b8aa-2e6494686aca
 
-The SmallPCC was created using the SMALL PCC Plan that uses 3 Locators and 6 Cache-Servers and, as you can see from the results below, there are 9 consecutive IP addresses ranging from 10.0.40.10 to 10.0.40.18:
+The SmallPCC was created using the SMALL PCC Plan that uses 3 Locators and 6 Cache-Servers. The results below show 9 consecutive IP addresses ranging from 10.0.40.10 to 10.0.40.18:
 
 ```
 $ cf nozzle -n | grep a83cf6e1-7592-4b69-b8aa-2e6494686aca | grep UsedHeapSize
