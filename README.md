@@ -154,3 +154,75 @@ origin:"p-cloudcache.service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" even
 origin:"p-cloudcache.service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" eventType:ValueMetric timestamp:1552603144791836263 deployment:"service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" job:"server" index:"c8a7c4ed-c9fe-4e3e-aa59-c27692590f4f" ip:"10.0.40.15" tags:<key:"source_id" value:"p-cloudcache.service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" > valueMetric:<name:"serviceinstance.UsedHeapSize" value:1119 unit:"megabytes" >  
 origin:"p-cloudcache.service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" eventType:ValueMetric timestamp:1552603157908057021 deployment:"service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" job:"server" index:"dac7efe6-714d-4768-95b0-cadda427530e" ip:"10.0.40.13" tags:<key:"source_id" value:"p-cloudcache.service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" > valueMetric:<name:"serviceinstance.UsedHeapSize" value:1010 unit:"megabytes" > 
 ```
+
+## Step 6. Let's rename one of the PCC Service Instances without stopping it
+
+```
+$ cf rename-service dev-cluster new-name-dev-cluster
+```
+```
+Renaming service dev-cluster to new-name-dev-cluster in org demo / space demo as admin...
+OK
+```
+
+Let's check what happened:
+
+```
+$ cf s | (head -n 3; grep cloud)
+```
+```
+Getting services in org demo / space demo as admin...
+
+name                   service          plan          bound apps            last operation
+ExtraSmallPCC          p-cloudcache     extra-small                         create succeeded
+new-name-dev-cluster   p-cloudcache     dev-plan      pcc-lookaside-cache   update succeeded
+SmallPCC               p-cloudcache     small                               create succeeded
+```
+
+From the results shown above, we can see that the `new-name-dev-cluster` is still bound to the `pcc-lookaside-cache`.
+I also tested the actual App and it's running normally without the need for any restarts.
+
+And, let's look at the relationship between names of Service Instances and GUIDs:
+
+```
+cf curl /v2/service_instances | jq '.resources[] .entity .name, .resources[] .metadata .guid'
+```
+```
+"myVolume"
+"autoscale-demo"
+"mysql-dev"
+"new-name-dev-cluster"
+"uaa-sso-instance"
+"RALPH"
+"SQLSvr4Chess"
+"Birch"
+"spring-cloud-broker-db"
+"spring-cloud-broker-rmq"
+"push-notifications-mysql"
+"push-notifications-rabbitmq"
+"SmallPCC"
+"ExtraSmallPCC"
+"PCC_Dev_Test"
+"2bf6ada8-5360-4b65-ad58-962def6dea64"
+"bf195dd6-5a15-4854-9827-618317f8e2d4"
+"4cf228ed-9ea1-418c-9aa1-f4a199351fd2"
+"f0dcd3e4-4645-466e-ac14-89686cb2c905"
+"2a358ea8-6478-4e84-af19-d58caa5e88fa"
+"8f26a4fe-f353-4eff-9ab3-39d8d92b0072"
+"7c0f00a6-12d9-405d-a4c7-47012690d499"
+"47e99301-0f2e-4d65-8842-93f9a475cecc"
+"18d0aa30-fe38-4a20-80fb-16f52b947cf4"
+"ba210046-52ee-4a35-9937-459e2559e053"
+"ad595a5b-5151-4a08-802f-5b10543154ec"
+"75a29f5f-b0e7-434e-b299-16c4705b75d7"
+"a83cf6e1-7592-4b69-b8aa-2e6494686aca"
+"f216dc9a-a9c1-4a7c-a7b9-de16814ebf43"
+"18c6a4f2-44d9-4e2a-978a-1b96b97c90dc"
+```
+
+The fourth item of the list has a new name but the same old GUID. This makes sense given that it is essentially still the same PCC Cluster.
+
+## Step 7. How to augment the loggregator stream with the Service Instance Names
+
+
+
