@@ -226,3 +226,8 @@ The fourth item of the list has a new name but the same old GUID. This makes sen
 
 
 
+```
+$ cf env pcc-lookaside-cache | tail -n +5
+```
+
+
