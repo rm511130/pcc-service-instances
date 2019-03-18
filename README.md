@@ -274,7 +274,7 @@ Correct, we didn't really fix the problem. In order to output Service Instance N
 
 (c) append the appropriate Service Instance Name to the output of `cf nozzle`
 
-@jtuchscherer added the feature request to his to-dos: _"combine flow of service instance metrics and service instance logs"_ back on 11-JAN-2019 11:35AM. I'm awaiting his update any moment now.
+@jtuchscherer added this feature request to his to-dos: _"combine flow of service instance metrics and service instance logs"_ back on 11-JAN-2019 11:35AM. I'm awaiting his update any moment now.
 
 
 
