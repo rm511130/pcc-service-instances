@@ -222,12 +222,40 @@ cf curl /v2/service_instances | jq '.resources[] .entity .name, .resources[] .me
 
 The fourth item of the list has a new name but the same old GUID. This makes sense given that it is essentially still the same PCC Cluster.
 
-## Step 7. How to augment the loggregator stream with the Service Instance Names
+## Step 7. What you will need to augment the loggregator stream with the Service Instance Names
 
-
+You will need to use either the output of:
 
 ```
-$ cf env pcc-lookaside-cache | tail -n +5
+cf curl /v2/service_instances | jq '.resources[] .entity .name, .resources[] .metadata .guid'
 ```
+or the output of the following scripts to append the instance_name to the output of the `cf nozzle` output:
+
+```
+$ cf env pcc-lookaside-cache | tail -n +5 | awk -f x.awk 
+f0dcd3e4-4645-466e-ac14-89686cb2c905
+new-name-dev-cluster
+```
+
+where `x.awk` contains the following script:
+
+```
+{
+  if (index($0,"p-cloudcache"))  { do getline; while (index($0,"gfsh")==0);
+                                   starts=index($0,"-")+1;
+                                   ends=index($0,".")-starts;
+                                   print substr($0,starts,ends);
+                                 }
+  if (index($0,"instance_name")) { starts=index($0,":")+3;
+                                   ends=index($0,"\",")-starts;
+                                   print substr($0,starts,ends);
+                                   exit 0;
+                                 }
+
+}
+```
+
+
+
 
 
