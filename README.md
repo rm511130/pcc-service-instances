@@ -264,6 +264,16 @@ where `x.awk` contains the following script:
 }
 ```
 
+## Step 8. We didn't really fix the problem:
+
+Correct, in order to output Service Instance Names alongside metrics from the Loggregator, one would need to:
+
+(a) constantly check whether the Service Instance Name has changed 
+(b) use a GUID-to-Service-Instance-Name mapping table to look-up Service Instance Names based on GUIDs
+(c) append the appropriate Service Instance Name to the output of `cf nozzle`
+
+@jtuchscherer added the feature request to his to-dos: _"combine flow of service instance metrics and service instance logs"_ back on 11-JAN-2019 11:35AM. I'm awaiting his update any moment now.
+
 
 
 
