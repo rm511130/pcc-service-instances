@@ -1,7 +1,7 @@
 # Description of the problem we're trying to solve:
 - You have a PCF/PAS foundation running multiple PCC Clusters in different Orgs and Spaces
-- You want to extract metrics from the loggregator for one particular instance of PCC including its Instance Name
-- How do you do that in a way that matches service instance names to their GUIDs?
+- You want to extract metrics, including Service Instance Names and GUIDs, for any given PCC cluster
+- How do you do that in a way that matches Service Instance Names to their GUIDs?
 
 The next few steps/sections are meant to familiarize you with the concepts and commands that provide the information necessary for pairing Service Instance Names to their repective GUIDs. 
 
@@ -12,9 +12,9 @@ The next few steps/sections are meant to familiarize you with the concepts and c
 - Ops Manager 2.4
 - vSphere 6.5 
 
-## Step 1. Where are you?
+## Step 1. It's important to know where you are in terms of PCF Foundation, ORG and SPACE:
 
-Make sure you are pointing at the correct `API`,`ORG` and `SPACE`:
+Make sure you are pointing at the `API`,`ORG` and `SPACE` of interest:
 ```
 $ cf t
 ```
@@ -40,10 +40,13 @@ ExtraSmallPCC      p-cloudcache     extra-small                         create s
 SmallPCC           p-cloudcache     small                               create succeeded
 ```
 As you can see, there are 3 Service Instances of PCC in this ORG and SPACE, and only one of them is bound to an App.
+Note that the `cf services` or `cf s` command will only list the services in the current targeted ORG and SPACE.
 
 ## Step 3. The GUIDs for all Service Instances across all ORGs and SPACEs
 
-For this step to work, you will need to be logged in as `admin`. Please note that Service Instances of all types (PCC, MySQL, NFS, Spring Cloud, etc...) will be displayed, including any additional PCC Services Instances that were not in the ORG and SPACE used in Steps 1 & 2.
+For this step to work, you will need to be logged in as `admin`. 
+
+Note that Service Instances of all types (PCC, MySQL, NFS, Spring Cloud, etc...) will be displayed, including any additional PCC Services Instances that were not in the ORG and SPACE used in Steps 1 & 2.
 
 ```
 $ cf curl /v2/service_instances | jq '.resources[] .entity .name, .resources[] .metadata .guid'
@@ -83,11 +86,13 @@ $ cf curl /v2/service_instances | jq '.resources[] .entity .name, .resources[] .
 
 Note that we have 15 Service Instance Names followed in the same order by their respective Service Instance GUIDs.
 
-The Service Instance named `"PCC_Dev_Test"` for example, is a PCC Service Instance that was not created in the Demo/Demo ORG and SPACE. We know this because its name did no show up in the results of Step 2.
+The Service Instance named `"PCC_Dev_Test"` for example, is a PCC Service Instance that was not created in the Demo/Demo:ORG/SPACE. We know this because its name did no show up in the results of Step 2.
 
-The Service Instance named `"dev-cluster"` (fourth on the list) is the one bound to the `pcc-lookaside-cache` App, so let's use it as the example. It's corresponding GUID is `"f0dcd3e4-4645-466e-ac14-89686cb2c905"`
+We know from Step 2 that the Service Instance named `"dev-cluster"` (fourth on the list) is the one bound to the `pcc-lookaside-cache` App, so let's use it as the example. It's corresponding GUID is `"f0dcd3e4-4645-466e-ac14-89686cb2c905"` (fourth on the list of GUIDs shown above).
 
 ## Step 4. Let's collect loggregator data for the dev_cluster
+
+The output from `cf nozzle -n` displays all messages from the Loggregator. These messages include GUIDs for Service Instances, so we must use the GUID for `"dev-cluster"` if we are to find metrics that pertain to it:
 
 ```
 $ cf nozzle -n | grep f0dcd3e4-4645-466e-ac14-89686cb2c905
@@ -128,7 +133,7 @@ origin:"p-cloudcache.service-instance_f0dcd3e4-4645-466e-ac14-89686cb2c905" even
 origin:"p-cloudcache.service-instance_f0dcd3e4-4645-466e-ac14-89686cb2c905" eventType:ValueMetric timestamp:1552601244440385793 deployment:"service-instance_f0dcd3e4-4645-466e-ac14-89686cb2c905" job:"locator-server" index:"420d9295-2734-45f1-90f2-c66e8c896cd4" ip:"10.0.40.3" tags:<key:"source_id" value:"p-cloudcache.service-instance_f0dcd3e4-4645-466e-ac14-89686cb2c905" > valueMetric:<name:"serviceinstance.UsedHeapSize" value:307 unit:"megabytes" >  
 origin:"p-cloudcache.service-instance_f0dcd3e4-4645-466e-ac14-89686cb2c905" eventType:ValueMetric timestamp:1552601306176586672 deployment:"service-instance_f0dcd3e4-4645-466e-ac14-89686cb2c905" job:"locator-server" index:"420d9295-2734-45f1-90f2-c66e8c896cd4" ip:"10.0.40.3" tags:<key:"source_id" value:"p-cloudcache.service-instance_f0dcd3e4-4645-466e-ac14-89686cb2c905" > valueMetric:<name:"serviceinstance.UsedHeapSize" value:383 unit:"megabytes" >
 ```
-Interesting results, but they are oddly simple. It turns out that `"dev-cluster"` was created as a single-node `dev-plan`.
+Interesting results, but they are oddly simple. You can only see data for a single IP address. That's because `"dev-cluster"` was created as a single-node `dev-plan`.
 
 ## Step 5. Let's find UsedHeapSize for the SmallPCC Cluster GUID a83cf6e1-7592-4b69-b8aa-2e6494686aca
 
@@ -156,6 +161,8 @@ origin:"p-cloudcache.service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" even
 origin:"p-cloudcache.service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" eventType:ValueMetric timestamp:1552603144791836263 deployment:"service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" job:"server" index:"c8a7c4ed-c9fe-4e3e-aa59-c27692590f4f" ip:"10.0.40.15" tags:<key:"source_id" value:"p-cloudcache.service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" > valueMetric:<name:"serviceinstance.UsedHeapSize" value:1119 unit:"megabytes" >  
 origin:"p-cloudcache.service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" eventType:ValueMetric timestamp:1552603157908057021 deployment:"service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" job:"server" index:"dac7efe6-714d-4768-95b0-cadda427530e" ip:"10.0.40.13" tags:<key:"source_id" value:"p-cloudcache.service-instance_a83cf6e1-7592-4b69-b8aa-2e6494686aca" > valueMetric:<name:"serviceinstance.UsedHeapSize" value:1010 unit:"megabytes" > 
 ```
+
+The point of Step 5 is to show that when displaying metrics for PCC clusters, you will need to take into account that most PCC Clusters have multiple Locators and Cache-Servers, each one with their own sets of metrics. They will all share the same Service Instance Name.
 
 ## Step 6. Let's rename one of the PCC Service Instances without stopping it
 
@@ -226,10 +233,10 @@ The fourth item of the list has a new name but the same old GUID. This makes sen
 
 ## Step 7. What you will need to augment the loggregator stream with the Service Instance Names
 
-You will need to use either the output of:
+You will need to use either the output of Step 3:
 
 ```
-cf curl /v2/service_instances | jq '.resources[] .entity .name, .resources[] .metadata .guid'
+$ cf curl /v2/service_instances | jq '.resources[] .entity .name, .resources[] .metadata .guid'
 ```
 or the output of the following scripts to append the instance_name to the output of the `cf nozzle` output:
 
