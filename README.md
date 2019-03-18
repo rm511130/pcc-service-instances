@@ -266,7 +266,7 @@ where `x.awk` contains the following script:
 
 ## Step 8. We didn't really fix the problem:
 
-Correct, in order to output Service Instance Names alongside metrics from the Loggregator, one would need to:
+Correct, we didn't really fix the problem. In order to output Service Instance Names alongside metrics from the Loggregator, one would need to:
 
 (a) constantly check whether the Service Instance Name has changed 
 (b) use a GUID-to-Service-Instance-Name mapping table to look-up Service Instance Names based on GUIDs
