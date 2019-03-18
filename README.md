@@ -1,6 +1,6 @@
 # Description of the problem we're trying to solve:
 - You have a PCF/PAS foundation running multiple PCC Clusters in different Orgs and Spaces
-- You want to extract metrics from the loggregator for one particular instance of PCC
+- You want to extract metrics from the loggregator for one particular instance of PCC including its Instance Name
 - How do you do that in a way that matches service instance names to their GUIDs?
 
 The next few steps/sections are meant to familiarize you with the concepts and commands that provide the information necessary for pairing Service Instance Names to their repective GUIDs. 
